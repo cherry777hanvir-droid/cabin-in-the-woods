@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" href="data:," />
+    <title>UI Preview · 林间小屋</title>
+    <style>
+      html,
+      body {
+        margin: 0;
+        height: 100%;
+        overflow: hidden;
+        background: #14100b;
+        font-family: Georgia, "Noto Serif SC", serif;
+      }
+      #scene-mock {
+        position: fixed;
+        inset: 0;
+        transition: filter 0.6s ease;
+      }
+      #scene-mock svg {
+        display: block;
+        width: 100%;
+        height: 100%;
+      }
+      body[data-mood="night"] #scene-mock {
+        filter: brightness(0.42) saturate(0.68) hue-rotate(-7deg);
+      }
+      body[data-mood="storm"] #scene-mock {
+        filter: brightness(0.46) saturate(0.55) contrast(1.06);
+      }
+      body[data-mood="winter"] #scene-mock {
+        filter: brightness(0.92) saturate(0.42);
+      }
+      #boot-fallback {
+        position: fixed;
+        inset: 0;
+        display: grid;
+        place-items: center;
+        background: #17120d;
+        color: #e7d3ae;
+        letter-spacing: 0.2em;
+        z-index: 9999;
+      }
+      /* preview-only state readout, bottom-left, hidden by default */
+      #state-note {
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="scene-mock" aria-hidden="true"></div>
+    <div id="ui-root"></div>
+    <div id="boot-fallback"><span>林间小屋</span></div>
+    <script type="module" src="/src/dev/ui-preview.js"></script>
+  </body>
+</html>

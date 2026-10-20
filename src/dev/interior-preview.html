@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Interior Preview · 林间小屋</title>
+    <style>
+      html, body { margin: 0; height: 100%; overflow: hidden; background: #17130e; }
+      canvas { display: block; }
+      #hud {
+        position: fixed; top: 16px; left: 18px; z-index: 3; color: #e8ddc6;
+        font: 11px/1.65 ui-monospace, "Cascadia Mono", monospace; letter-spacing: .12em;
+        background: rgba(10,8,6,.62); padding: 10px 14px; border: 1px solid rgba(255,210,150,.22);
+        max-width: 320px;
+      }
+      #hud b { color: #ffcf8a; font-weight: 400; }
+      #hud .dim { opacity: .55; }
+      #interacts {
+        position: fixed; bottom: 16px; left: 18px; z-index: 3; color: #e8ddc6;
+        font: 11px/1.7 ui-monospace, monospace; letter-spacing: .08em;
+        background: rgba(10,8,6,.62); padding: 8px 12px; border: 1px solid rgba(255,210,150,.18);
+      }
+      #interacts .na { opacity: .35; text-decoration: line-through; }
+      #panel {
+        position: fixed; top: 50%; right: 48px; transform: translateY(-50%);
+        width: min(380px, 40vw); z-index: 5; color: #efe4cd;
+        background: linear-gradient(160deg, rgba(34,27,20,.94), rgba(18,14,10,.96));
+        border: 1px solid rgba(255,210,150,.3); padding: 26px 28px;
+        box-shadow: 0 24px 60px rgba(0,0,0,.55); display: none;
+      }
+      #panel.open { display: block; }
+      #panel .eyebrow { font: 10px/1.4 ui-monospace, monospace; letter-spacing: .3em; color: #b99a6a; text-transform: uppercase; }
+      #panel h2 { font: 400 24px/1.4 Georgia, "Songti SC", serif; letter-spacing: .12em; margin: 10px 0 16px; }
+      #panel p { font: 400 13px/2 Georgia, "Songti SC", serif; color: #d8c9ae; margin: 0 0 12px; }
+      #panel .footer { font-size: 11px; letter-spacing: .1em; color: #9c8766; text-align: right; margin-top: 18px; font-family: Georgia, serif; }
+      #panel .close {
+        position: absolute; top: 12px; right: 14px; background: none; border: 0; color: #c8b48c;
+        font-size: 18px; cursor: pointer; font-family: ui-monospace, monospace;
+      }
+      #toast {
+        position: fixed; bottom: 88px; left: 50%; transform: translateX(-50%);
+        color: #ffd9a6; background: rgba(20,14,9,.82); border: 1px solid rgba(255,200,140,.25);
+        padding: 8px 18px; font: 12px/1.5 ui-monospace, monospace; letter-spacing: .14em;
+        opacity: 0; transition: opacity .35s ease; z-index: 4; pointer-events: none;
+      }
+      #toast.on { opacity: 1; }
+    </style>
+  </head>
+  <body>
+    <div id="hud"><b>INTERIOR PREVIEW</b><br /><span id="hud-lines"></span></div>
+    <div id="interacts"></div>
+    <div id="panel"></div>
+    <div id="toast"></div>
+    <script type="module" src="/src/dev/interior-preview.js"></script>
+  </body>
+</html>

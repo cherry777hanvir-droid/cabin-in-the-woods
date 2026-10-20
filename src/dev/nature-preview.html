@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Nature Preview · 林间小屋</title>
+    <style>
+      html, body { margin: 0; height: 100%; overflow: hidden; background: #14110d; }
+      #app { position: fixed; inset: 0; }
+      #app canvas { display: block; }
+      #hud {
+        position: fixed; left: 18px; top: 16px; color: #e7d6b2;
+        font: 12px/1.65 Georgia, "Times New Roman", serif;
+        letter-spacing: 0.14em; text-shadow: 0 1px 4px rgba(0,0,0,.85);
+        pointer-events: none; white-space: pre;
+      }
+      #panel {
+        position: fixed; right: 26px; top: 50%; transform: translateY(-50%);
+        width: 360px; max-width: calc(100vw - 52px);
+        padding: 26px 28px 22px;
+        background: linear-gradient(160deg, rgba(32,25,18,.94), rgba(20,16,12,.94));
+        border: 1px solid rgba(200,170,120,.28);
+        box-shadow: 0 24px 60px rgba(0,0,0,.55);
+        color: #e9dcc3; font-family: Georgia, "Noto Serif SC", serif;
+        letter-spacing: .04em; display: none; backdrop-filter: blur(6px);
+      }
+      #panel.open { display: block; }
+      #panel .eyebrow { font-size: 10px; letter-spacing: .32em; color: #b99a68; margin-bottom: 12px; }
+      #panel h2 { font-size: 21px; font-weight: 400; margin: 0 0 14px; letter-spacing: .1em; }
+      #panel p { font-size: 13px; line-height: 1.95; margin: 0 0 12px; color: #cfc0a6; }
+      #panel .footer { font-size: 11px; letter-spacing: .18em; color: #9b8461; margin-top: 16px; }
+      #panel .hint { position: absolute; right: 14px; top: 12px; font-size: 10px; color: #8b7656; letter-spacing: .1em; }
+    </style>
+  </head>
+  <body>
+    <div id="app"></div>
+    <div id="hud"></div>
+    <div id="panel"><span class="hint">ESC 关闭</span><div class="eyebrow"></div><h2></h2><div class="body"></div><div class="footer"></div></div>
+    <script type="module" src="./nature-preview.js"></script>
+  </body>
+</html>

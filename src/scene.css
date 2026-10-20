@@ -1,0 +1,83 @@
+/* Lead-owned scene chrome: canvas mount, cinematic vignette/grain, transitions.
+   UI styling lives in src/ui.css (ui-dev). */
+html,
+body {
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #14100b;
+  color: #f2e8d6;
+}
+
+#app,
+#scene-root {
+  position: fixed;
+  inset: 0;
+}
+
+#scene-root canvas {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+  outline: none;
+  touch-action: none;
+}
+
+/* Film vignette + delicate grain above the WebGL canvas, below the HUD. */
+#atmosphere {
+  position: fixed;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse at 50% 46%, rgba(12, 8, 4, 0) 42%, rgba(10, 7, 4, 0.18) 74%, rgba(8, 5, 3, 0.48) 100%),
+    linear-gradient(to bottom, rgba(8, 5, 3, 0.2) 0%, rgba(0, 0, 0, 0) 15%, rgba(0, 0, 0, 0) 78%, rgba(8, 5, 3, 0.3) 100%);
+}
+
+#atmosphere::after {
+  content: '';
+  position: absolute;
+  inset: -40%;
+  opacity: 0.035;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  animation: grain-shift 0.9s steps(3) infinite;
+}
+
+@keyframes grain-shift {
+  0% { transform: translate(0, 0); }
+  33% { transform: translate(-2%, 1.5%); }
+  66% { transform: translate(1.5%, -2%); }
+  100% { transform: translate(0, 0); }
+}
+
+#scene-transition {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  background: #0b0806;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.42s ease;
+}
+
+#scene-transition.active {
+  opacity: 1;
+}
+
+#interaction-debug {
+  position: fixed;
+  left: 12px;
+  bottom: 12px;
+  z-index: 60;
+  font: 10px/1.5 ui-monospace, monospace;
+  color: #d9c8a8;
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #atmosphere::after {
+    animation: none;
+  }
+}

@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Cabin Preview · 林间小屋</title>
+    <style>
+      html, body { margin: 0; height: 100%; overflow: hidden; background: #12100d; }
+      canvas { display: block; }
+      #label {
+        position: fixed; top: 16px; left: 18px; z-index: 2; color: #e8ddc6;
+        font: 11px/1.7 ui-monospace, monospace; letter-spacing: .2em;
+        background: rgba(0,0,0,.5); padding: 9px 13px; border: 1px solid rgba(255,255,255,.14);
+        pointer-events: none;
+      }
+      #label b { color: #ffcf8a; font-weight: 400; letter-spacing: .28em; }
+      #label span { color: #bfae91; }
+    </style>
+  </head>
+  <body>
+    <div id="label"><b>CABIN / PREVIEW</b><br /><span id="mode">loading…</span></div>
+    <div id="app"></div>
+    <script type="module" src="/src/dev/cabin-preview.js"></script>
+  </body>
+</html>

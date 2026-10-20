@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Environment & Player preview</title>
+    <style>
+      html, body { margin: 0; height: 100%; overflow: hidden; background: #14100b; }
+      canvas { display: block; }
+      #hud { position: fixed; top: 16px; left: 16px; z-index: 2; color: #e8dcc4; font: 11px/1.7 ui-monospace, monospace; background: rgba(15,11,7,.6); border: 1px solid rgba(230,200,150,.2); padding: 8px 12px; letter-spacing: .1em; }
+    </style>
+  </head>
+  <body>
+    <div id="hud">LEAD PREVIEW</div>
+    <script type="module" src="/src/dev/lead-preview.js"></script>
+  </body>
+</html>
