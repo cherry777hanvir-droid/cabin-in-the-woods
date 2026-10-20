@@ -2,33 +2,6 @@
 
 一座可以走进去、点起壁炉、听雨的秋日森林小屋。纯前端、全程序化生成，无外部模型或贴图资源；电影感暖色写实与手工质感并重。
 
-![默认黄昏](qa/final-hero3.png)
-
-## 运行
-
-```bash
-npm install
-npm run dev       # http://127.0.0.1:5173/ （也监听局域网）
-npm run build     # 生产构建到 dist/
-npm run preview   # http://127.0.0.1:4173/ （也监听局域网）
-```
-
-## 分享给别人
-
-当前生产预览已经绑定全部网卡，并开好了 Cloudflare 临时公网隧道：
-
-- 公网链接（临时，本次进程运行期间有效）：<https://vary-issued-too-agriculture.trycloudflare.com/>
-- 同一局域网：<http://10.167.34.96:4173/>（若对方打不开，多半是 Windows 防火墙拦了入站连接，改用上面的公网链接即可）
-- 本机：<http://127.0.0.1:4173/>
-
-如果需要自己重新开启一条新的临时公网链接：
-
-```bash
-npm run preview
-.\tools\cloudflared.exe tunnel --url http://127.0.0.1:4173 --no-autoupdate
-```
-
-cloudflared 会打印一个新的 `https://xxxx.trycloudflare.com` 链接；链接在命令运行期间有效。若要长期公开托管，把 `dist/` 目录部署到任意静态站点托管即可（例如 Cloudflare Pages / Netlify / Vercel），无需服务器代码。
 
 ## 操作
 
