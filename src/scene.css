@@ -76,6 +76,54 @@ body {
   pointer-events: none;
 }
 
+/* Sound toggle: injected into the UI's environment dock so it inherits the
+   existing walnut/brass control language. */
+.dock-group--sound {
+  min-width: 46px;
+}
+.sound-btn .dock-btn-label {
+  letter-spacing: 0.08em;
+  padding-left: 0.08em;
+}
+.sound-btn .dock-btn-ic svg {
+  display: block;
+  width: 16px;
+  height: 16px;
+}
+.sound-btn .sound-slash {
+  opacity: 0;
+  transition: opacity 0.22s ease;
+}
+.sound-btn .sound-wave {
+  transition: opacity 0.22s ease;
+}
+.sound-btn[aria-pressed="false"] .sound-wave {
+  opacity: 0.12;
+}
+.sound-btn[aria-pressed="false"] .sound-slash {
+  opacity: 1;
+}
+
+/* Snow is only selectable while the world is in winter. */
+.dock-btn[data-weather="snow"]:disabled,
+.dock-btn[data-weather="snow"].is-season-locked {
+  opacity: 0.28;
+  cursor: not-allowed;
+  color: rgba(242, 232, 214, 0.34);
+}
+.dock-btn[data-weather="snow"]:disabled:hover {
+  background: transparent;
+  color: rgba(242, 232, 214, 0.34);
+}
+
+@media (max-width: 760px) {
+  .dock-group--sound {
+    min-width: 42px;
+    padding-left: 8px;
+    padding-right: 8px;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   #atmosphere::after {
     animation: none;

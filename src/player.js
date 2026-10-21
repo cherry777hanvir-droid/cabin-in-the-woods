@@ -137,6 +137,7 @@ export function createPlayer({ scene, camera, domElement, outsideColliders = [],
   const pos = new THREE.Vector3(WORLD.spawn.x, 0, WORLD.spawn.z);
   const velocity = new THREE.Vector3();
   const keys = new Set();
+  const touchInput = { x: 0, y: 0, run: false };
   const ray = new THREE.Raycaster();
   ray.far = 20;
 
@@ -224,8 +225,22 @@ export function createPlayer({ scene, camera, domElement, outsideColliders = [],
     state.inputEnabled = enabled;
     if (!enabled) {
       keys.clear();
+      touchInput.x = 0;
+      touchInput.y = 0;
       dragging = false;
     }
+  }
+
+  function setTouchInput(x = 0, y = 0, run = false) {
+    const mag = Math.hypot(Number(x) || 0, Number(y) || 0);
+    if (mag > 1) {
+      touchInput.x = x / mag;
+      touchInput.y = y / mag;
+    } else {
+      touchInput.x = Number(x) || 0;
+      touchInput.y = Number(y) || 0;
+    }
+    touchInput.run = Boolean(run);
   }
 
   function moveWithCollisions(dt, colliders, speedTarget) {
@@ -238,6 +253,10 @@ export function createPlayer({ scene, camera, domElement, outsideColliders = [],
       if (keys.has('KeyS') || keys.has('ArrowDown')) wish.sub(fwd);
       if (keys.has('KeyD') || keys.has('ArrowRight')) wish.add(right);
       if (keys.has('KeyA') || keys.has('ArrowLeft')) wish.sub(right);
+      if (Math.hypot(touchInput.x, touchInput.y) > 0.02) {
+        wish.addScaledVector(right, touchInput.x);
+        wish.addScaledVector(fwd, touchInput.y);
+      }
     }
     const active = wish.lengthSq() > 0.001;
     if (active) wish.normalize().multiplyScalar(speedTarget);
@@ -270,7 +289,7 @@ export function createPlayer({ scene, camera, domElement, outsideColliders = [],
   }
 
   function updateThirdPerson(dt) {
-    const running = keys.has('ShiftLeft') || keys.has('ShiftRight');
+    const running = keys.has('ShiftLeft') || keys.has('ShiftRight') || touchInput.run;
     const speedTarget = running ? params.runSpeed : params.walkSpeed;
     moveWithCollisions(dt, outsideColliders, speedTarget);
     const ground = outdoorGroundHeight(pos.x, pos.z);
@@ -322,7 +341,7 @@ export function createPlayer({ scene, camera, domElement, outsideColliders = [],
   }
 
   function updateFirstPerson(dt) {
-    const running = keys.has('ShiftLeft') || keys.has('ShiftRight');
+    const running = keys.has('ShiftLeft') || keys.has('ShiftRight') || touchInput.run;
     const speedTarget = running ? 4.1 : 2.35;
     moveWithCollisions(dt, interiorColliders, speedTarget);
 
@@ -580,6 +599,7 @@ export function createPlayer({ scene, camera, domElement, outsideColliders = [],
       if (occ) occluders = occ;
       ray.far = 20;
     },
+    setTouchInput,
     update,
     enterInterior,
     exitInterior,

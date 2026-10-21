@@ -4,6 +4,7 @@
 // ---------------------------------------------------------------------------
 import * as THREE from 'three';
 import './scene.css';
+import './mobile.css';
 import {
   CABIN,
   WORLD,
@@ -15,6 +16,8 @@ import {
   DEFAULT_STATE,
 } from './config.js';
 import { createUI } from './ui.js';
+import { createAudio } from './audio.js';
+import { createMobileControls } from './mobileControls.js';
 import { createEnvironment } from './environment.js';
 import { createPost } from './post.js';
 import { createPlayer } from './player.js';
@@ -79,6 +82,7 @@ let currentInteractable = null;
 let lastPromptKey = '';
 let lastUiSync = 0;
 let lastInteractionScan = 0;
+let mobileControls = null;
 
 const ui = createUI({
   onTimePreset: (preset) => handleTimePreset(preset),
@@ -90,11 +94,77 @@ const ui = createUI({
     panelOpen = false;
     interior?.notifyNoteClosed?.();
     if (!transitioning) player?.setInputEnabled(true);
-    ui.setPrompt(null);
+    mobileControls?.setEnabled(!transitioning);
+    setPromptUI(null);
   },
 });
 
 ui.setLoading(0.08, '正在拨开林间的雾…');
+
+// ---------------------------------------------------------------------------
+// Sound: a synthesized forest soundscape. It starts on the first user gesture
+// (browser autoplay policies) and can be muted from the environment dock.
+// ---------------------------------------------------------------------------
+const audio = createAudio();
+audio.attachUI(document.getElementById('ui-root'));
+
+function setupSoundControl() {
+  const dock = document.getElementById('environment-dock');
+  if (!dock || document.getElementById('sound-toggle')) return;
+
+  const divider = document.createElement('div');
+  divider.className = 'dock-divider';
+  divider.setAttribute('aria-hidden', 'true');
+  const group = document.createElement('section');
+  group.className = 'dock-group dock-group--sound';
+  group.setAttribute('role', 'group');
+  group.setAttribute('aria-label', '声音');
+  const groupLabel = document.createElement('div');
+  groupLabel.className = 'dock-group-label';
+  groupLabel.textContent = '声音';
+  const row = document.createElement('div');
+  row.className = 'dock-row';
+  const button = document.createElement('button');
+  button.type = 'button';
+  button.id = 'sound-toggle';
+  button.className = 'dock-btn sound-btn';
+  button.setAttribute('aria-pressed', 'true');
+  button.innerHTML = `
+    <span class="dock-btn-ic" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.35" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M4 9.5h3.4L12 5.5v13l-4.6-4H4z"/>
+        <path class="sound-wave" d="M15.5 8.4a5 5 0 0 1 0 7.2"/>
+        <path class="sound-wave" d="M18.3 5.8a9 9 0 0 1 0 12.4"/>
+        <path class="sound-slash" d="m15.6 9.6 4.1 4.1"/>
+        <path class="sound-slash" d="m19.7 9.6-4.1 4.1"/>
+      </svg>
+    </span>
+    <span class="dock-btn-label">开</span>`;
+
+  const sync = () => {
+    const muted = audio.muted;
+    button.setAttribute('aria-pressed', muted ? 'false' : 'true');
+    button.setAttribute('aria-label', muted ? '开启环境声与配乐' : '关闭环境声与配乐');
+    button.title = muted ? '环境声与配乐：关（点击开启）' : '环境声与配乐：开（点击静音）';
+    button.querySelector('.dock-btn-label').textContent = muted ? '关' : '开';
+  };
+  button.addEventListener('click', (event) => {
+    event.preventDefault();
+    const muted = audio.toggleMute();
+    if (!muted) audio.playClick();
+    sync();
+    button.blur();
+  });
+
+  row.appendChild(button);
+  group.appendChild(groupLabel);
+  group.appendChild(row);
+  dock.appendChild(divider);
+  dock.appendChild(group);
+  sync();
+}
+
+setupSoundControl();
 
 // ---------------------------------------------------------------------------
 // World modules
@@ -128,6 +198,31 @@ const player = createPlayer({
 });
 
 player.setInputEnabled(false);
+
+// Touch controls are created after the player so their joystick can drive it.
+// Desktop users never see these controls; small/touch layouts do.
+mobileControls = createMobileControls({
+  onMove: (x, y, run) => player.setTouchInput(x, y, run),
+  onAction: () => {
+    audio.playClick();
+    handleInteractKey();
+  },
+  onToggleView: () => {
+    audio.playClick();
+    toggleView();
+  },
+});
+mobileControls.setEnabled(false);
+
+function setPromptUI(prompt) {
+  ui.setPrompt(prompt);
+  mobileControls?.setPrompt(prompt);
+}
+
+function setModeUI(mode) {
+  ui.setMode(mode);
+  mobileControls?.setMode(mode);
+}
 
 // ---------------------------------------------------------------------------
 // Interactions
@@ -246,14 +341,15 @@ function promptFor(def) {
 
 function refreshPrompt(force = false) {
   const next = findNearestInteractable();
-  const key = next ? next.id : '';
+  const prompt = next ? promptFor(next) : null;
+  const key = next ? `${next.id}|${prompt?.action || ''}` : '';
   if (!force && key === lastPromptKey) {
     currentInteractable = next;
     return;
   }
   lastPromptKey = key;
   currentInteractable = next;
-  ui.setPrompt(next ? promptFor(next) : null);
+  setPromptUI(prompt);
 }
 
 function handleCanvasClick(event) {
@@ -309,31 +405,41 @@ async function toggleView() {
   if (!isReady || transitioning) return;
   transitioning = true;
   player.setInputEnabled(false);
+  mobileControls?.setEnabled(false);
   ui.setLocked?.(true);
-  ui.setPrompt(null);
+  setPromptUI(null);
   currentInteractable = null;
   lastPromptKey = '';
   transitionEl.classList.add('active');
   await wait(430);
   if (player.mode === 'third') {
     cabin.setDoorOpen?.(true);
+    audio.playDoor(true);
     player.enterInterior();
-    ui.setMode('first');
+    setModeUI('first');
   } else {
     cabin.setDoorOpen?.(true);
+    audio.playDoor(true);
     player.exitInterior();
-    ui.setMode('third');
+    setModeUI('third');
   }
   await wait(150);
   transitionEl.classList.remove('active');
   await wait(520);
   if (player.mode === 'third') {
-    setTimeout(() => cabin.setDoorOpen?.(false), 450);
+    setTimeout(() => {
+      cabin.setDoorOpen?.(false);
+      audio.playDoor(false);
+    }, 450);
   }
   transitioning = false;
   player.setInputEnabled(!panelOpen);
+  mobileControls?.setEnabled(!panelOpen);
   ui.setLocked?.(false);
   syncUI(true);
+  // The exit prompt is useful immediately after arriving indoors, so refresh
+  // it once the fade has cleared rather than waiting for the next scan.
+  refreshPrompt(true);
 }
 
 // ---------------------------------------------------------------------------
@@ -343,7 +449,8 @@ function openPanel(note) {
   if (!note) return;
   panelOpen = true;
   player.setInputEnabled(false);
-  ui.setPrompt(null);
+  mobileControls?.setEnabled(false);
+  setPromptUI(null);
   currentInteractable = null;
   lastPromptKey = '';
   ui.showPanel(note);
@@ -358,6 +465,7 @@ function hidePanel() {
   ui.hidePanel();
   interior.notifyNoteClosed?.();
   if (!transitioning) player.setInputEnabled(true);
+  mobileControls?.setEnabled(!transitioning);
   syncUI(true);
 }
 
@@ -469,8 +577,25 @@ function handleTimeInput(hour) {
   syncUI(true);
 }
 
+function syncWeatherAvailability() {
+  const snowButton = document.querySelector('[data-weather="snow"]');
+  if (!snowButton) return;
+  const available = state.season === 'winter';
+  snowButton.disabled = !available;
+  snowButton.setAttribute('aria-disabled', String(!available));
+  snowButton.title = available ? '天气：雪' : '下雪只在冬季开放';
+  snowButton.classList.toggle('is-season-locked', !available);
+}
+
 function handleWeatherChange(weather) {
   if (!WEATHERS.includes(weather)) return;
+  // Snow is a winter-only weather. This prevents the old bug where selecting
+  // snow in summer kept the summer foliage with a winter particle layer.
+  if (weather === 'snow' && state.season !== 'winter') {
+    ui.notify?.('下雪只在冬季开放');
+    syncWeatherAvailability();
+    return;
+  }
   state.weather = weather;
   state.windowGlow = computeWindowGlow();
   syncWorld(true);
@@ -479,15 +604,26 @@ function handleWeatherChange(weather) {
 
 function handleSeasonChange(season) {
   if (!SEASONS.includes(season)) return;
+  const snowWasOn = state.weather === 'snow';
   state.season = season;
+  if (snowWasOn && season !== 'winter') {
+    // Leaving winter must also leave the snow layer behind.
+    state.weather = 'clear';
+    state.windowGlow = computeWindowGlow();
+  }
+  syncWeatherAvailability();
   syncWorld(true);
-  ui.notify?.(`季节 · ${SEASON_META[season]?.label || season}`);
+  if (snowWasOn && season !== 'winter') {
+    ui.notify?.(`季节 · ${SEASON_META[season]?.label || season} · 雪停了`);
+  } else {
+    ui.notify?.(`季节 · ${SEASON_META[season]?.label || season}`);
+  }
 }
 
 // ---------------------------------------------------------------------------
 // Main loop / time
 // ---------------------------------------------------------------------------
-const envForLights = { hour: state.hour, season: state.season, weather: state.weather };
+const envForLights = { hour: state.hour, season: state.season, weather: state.weather, interior: false };
 let lastTime = performance.now();
 let wasHidden = false;
 
@@ -530,7 +666,7 @@ const debug = {
   player,
   camera,
   get modules() {
-    return { environment, cabin, interior, nature, ui, post, player };
+    return { environment, cabin, interior, nature, ui, post, player, audio };
   },
   getState: () => ({
     ...state,
@@ -550,13 +686,13 @@ const debug = {
   enterCabin: () => {
     if (player.mode === 'third') {
       player.enterInterior();
-      ui.setMode('first');
+      setModeUI('first');
     }
   },
   exitCabin: () => {
     if (player.mode === 'first') {
       player.exitInterior();
-      ui.setMode('third');
+      setModeUI('third');
     }
   },
   toggleFire: () => interior.setFireplace?.(!interior.fireplaceOn),
@@ -583,6 +719,24 @@ const debug = {
   },
   getPrompt: () => (currentInteractable ? promptFor(currentInteractable) : null),
   refreshPrompt: () => refreshPrompt(true),
+  toggleSound: () => {
+    const muted = audio.toggleMute();
+    const button = document.getElementById('sound-toggle');
+    if (button) {
+      button.setAttribute('aria-pressed', muted ? 'false' : 'true');
+      const label = button.querySelector('.dock-btn-label');
+      if (label) label.textContent = muted ? '关' : '开';
+    }
+    if (!muted) audio.playClick();
+    return !muted;
+  },
+  getAudioState: () => ({
+    muted: audio.muted,
+    started: audio.started,
+    contextState: audio.contextState,
+    level: audio.getLevel(),
+    music: audio.musicInfo,
+  }),
 };
 window.__scene = debug;
 
@@ -596,6 +750,7 @@ function tick() {
     envForLights.hour = state.hour;
     envForLights.season = state.season;
     envForLights.weather = state.weather;
+    envForLights.interior = player.mode === 'first';
     player.update(dt);
     environment.update(dt, envForLights);
     const env = moduleEnv();
@@ -608,6 +763,26 @@ function tick() {
     });
     // A winter hearth is always drawing; otherwise only a lit fire smokes.
     cabin.setSmokeLevel?.(state.season === 'winter' ? 1 : interior.fireplaceOn ? 0.7 : 0);
+
+    // Soundscape follows the same state as the lighting and particles.
+    const soundEnv = {
+      season: state.season,
+      weather: state.weather,
+      hour: state.hour,
+      overcast: OVERCAST[state.weather] ?? 0,
+      interior: player.mode === 'first',
+    };
+    audio.setEnvironment(soundEnv);
+    audio.update(dt, {
+      ...soundEnv,
+      moving: Boolean(player.state?.moving),
+      speed: player.state?.speed || 0,
+      position: player.getPosition(),
+      fireplaceOn: Boolean(interior.fireplaceOn),
+      curtainsOpen: Boolean(interior.curtainsOpen),
+      panelOpen,
+    });
+
     if (panelOpen && !ui.isPanelOpen()) {
       // UI closed the note through one of its own paths; keep world state in sync.
       panelOpen = false;
@@ -689,6 +864,7 @@ function flattenOccluders(list = []) {
 // ---------------------------------------------------------------------------
 async function boot() {
   state.windowGlow = computeWindowGlow();
+  syncWeatherAvailability();
   syncModules(true);
   syncUI(true);
   onResize();
@@ -721,9 +897,11 @@ async function boot() {
   isReady = true;
   debug.ready = true;
   player.setInputEnabled(true);
+  mobileControls?.setEnabled(true);
+  mobileControls?.updateOffset();
   syncUI(true);
   setTimeout(() => {
-    if (!panelOpen) ui.setPrompt(null);
+    if (!panelOpen) setPromptUI(null);
   }, 300);
 }
 

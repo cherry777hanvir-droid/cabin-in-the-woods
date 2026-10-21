@@ -1,0 +1,234 @@
+/* Mobile touch controls — hidden on desktop, rendered just above the dock. */
+.mobile-controls {
+  --mobile-controls-bottom: 190px;
+  position: fixed;
+  inset: 0;
+  z-index: 950;
+  pointer-events: none;
+  display: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.mobile-controls.is-visible {
+  display: block;
+}
+
+.mobile-stick-zone {
+  position: absolute;
+  left: max(16px, env(safe-area-inset-left));
+  bottom: calc(var(--mobile-controls-bottom) + env(safe-area-inset-bottom));
+  width: 112px;
+  pointer-events: auto;
+  touch-action: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 7px;
+  transition: opacity 0.25s ease;
+}
+
+.mobile-stick-zone.is-disabled {
+  opacity: 0.25;
+  pointer-events: none;
+}
+
+.mobile-stick-base {
+  position: relative;
+  width: 106px;
+  height: 106px;
+  border-radius: 50%;
+  border: 1px solid rgba(214, 179, 122, 0.34);
+  background:
+    radial-gradient(circle at 50% 44%, rgba(214, 179, 122, 0.1), rgba(16, 12, 8, 0.34) 62%, rgba(16, 12, 8, 0.12) 100%);
+  box-shadow:
+     inset 0 1px 0 rgba(255, 246, 224, 0.1),
+     inset 0 -12px 28px rgba(0, 0, 0, 0.28),
+     0 12px 32px rgba(0, 0, 0, 0.32);
+  -webkit-backdrop-filter: blur(13px);
+  backdrop-filter: blur(13px);
+  touch-action: none;
+}
+
+.mobile-stick-base.is-active {
+  border-color: rgba(232, 197, 139, 0.65);
+  background:
+    radial-gradient(circle at 50% 44%, rgba(214, 179, 122, 0.16), rgba(16, 12, 8, 0.4) 65%, rgba(16, 12, 8, 0.16) 100%);
+}
+
+.mobile-stick-mark {
+  position: absolute;
+  inset: 12px;
+  width: calc(100% - 24px);
+  height: calc(100% - 24px);
+  fill: none;
+  stroke: rgba(232, 216, 183, 0.26);
+  stroke-width: 1.2;
+  stroke-linecap: round;
+}
+
+.mobile-stick-knob {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  border: 1px solid rgba(230, 199, 148, 0.62);
+  background:
+    radial-gradient(circle at 38% 30%, rgba(255, 228, 177, 0.32), rgba(95, 67, 38, 0.66) 60%, rgba(36, 26, 16, 0.82));
+  box-shadow:
+    inset 0 1px 2px rgba(255, 246, 224, 0.28),
+    0 5px 16px rgba(0, 0, 0, 0.4);
+  pointer-events: none;
+}
+
+.mobile-control-label {
+  font-size: 9px;
+  letter-spacing: 0.32em;
+  padding-left: 0.32em;
+  color: rgba(242, 232, 214, 0.45);
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.5);
+}
+
+.mobile-actions {
+  position: absolute;
+  right: max(16px, env(safe-area-inset-right));
+  bottom: calc(var(--mobile-controls-bottom) + env(safe-area-inset-bottom));
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 9px;
+  pointer-events: auto;
+  transition: opacity 0.25s ease;
+}
+
+.mobile-controls.is-disabled .mobile-actions {
+  opacity: 0.35;
+  pointer-events: none;
+}
+
+.mobile-action {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  width: 48px;
+  height: 48px;
+  padding: 0;
+  border-radius: 50%;
+  border: 1px solid rgba(214, 179, 122, 0.28);
+  background: linear-gradient(158deg, rgba(37, 28, 19, 0.72), rgba(16, 12, 8, 0.74));
+  color: rgba(242, 232, 214, 0.7);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 246, 224, 0.08),
+    0 8px 24px rgba(0, 0, 0, 0.32);
+  -webkit-backdrop-filter: blur(15px) saturate(1.05);
+  backdrop-filter: blur(15px) saturate(1.05);
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  transition:
+    color 0.2s ease,
+    border-color 0.2s ease,
+    background 0.2s ease,
+    transform 0.12s ease;
+}
+
+.mobile-action:active {
+  transform: scale(0.93);
+}
+
+.mobile-action-icon {
+  width: 17px;
+  height: 17px;
+}
+
+.mobile-action-icon svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.mobile-action-text {
+  font-size: 8.5px;
+  line-height: 1;
+  letter-spacing: 0.08em;
+  padding-left: 0.08em;
+}
+
+.mobile-action--run.is-on {
+  color: var(--ui-ivory, #f2e8d6);
+  border-color: rgba(214, 179, 122, 0.6);
+  background: linear-gradient(158deg, rgba(126, 86, 42, 0.7), rgba(37, 28, 19, 0.78));
+}
+
+.mobile-action--view.is-inside {
+  color: var(--ui-ivory, #f2e8d6);
+  border-color: rgba(214, 179, 122, 0.45);
+}
+
+.mobile-action--interact {
+  width: 68px;
+  height: 68px;
+  flex-direction: row;
+  gap: 5px;
+  border-color: rgba(214, 179, 122, 0.24);
+  color: rgba(242, 232, 214, 0.42);
+}
+
+.mobile-action--interact.is-available {
+  color: var(--ui-ivory, #f2e8d6);
+  border-color: rgba(232, 197, 139, 0.82);
+  background: linear-gradient(158deg, rgba(126, 84, 38, 0.82), rgba(45, 30, 16, 0.88));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 246, 224, 0.18),
+    0 0 22px rgba(218, 163, 82, 0.22),
+    0 8px 24px rgba(0, 0, 0, 0.36);
+}
+
+.mobile-action-key {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 1px solid rgba(242, 232, 214, 0.3);
+  font-size: 10px;
+  line-height: 1;
+}
+
+.mobile-action--interact.is-available .mobile-action-key {
+  border-color: rgba(244, 224, 183, 0.7);
+  background: rgba(214, 179, 122, 0.13);
+}
+
+.mobile-action--interact .mobile-action-text {
+  font-size: 9px;
+  max-width: 36px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.mobile-action:disabled {
+  cursor: default;
+}
+
+/* On touch layouts the dock and action buttons replace the keyboard hints and
+   the centre prompt, keeping the small screen uncluttered. */
+@media (pointer: coarse), (max-width: 820px) {
+  .hint-bar {
+    display: none !important;
+  }
+
+  #interaction-prompt {
+    display: none !important;
+  }
+
+  .environment-dock {
+    padding-bottom: 8px;
+  }
+}

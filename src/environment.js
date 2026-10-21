@@ -624,6 +624,7 @@ export function createEnvironment({ scene, renderer, camera }) {
     daylight: 1,
     overcast: 0,
     weatherLabel: 'clear',
+    interior: false,
   };
 
   const tmp = {
@@ -859,7 +860,7 @@ export function createEnvironment({ scene, renderer, camera }) {
   // ---------- snow update ----------
   const tmpVec = new THREE.Vector3();
   function updateSnow(dt, cameraPos) {
-    const active = state.snow;
+    const active = state.snow * (state.interior ? 0 : 1);
     for (const layer of snowLayers) {
       layer.targetOpacity = layer.baseOpacity * active;
       layer.mat.opacity = layer.targetOpacity * (active > 0.02 ? 1 : 0);
@@ -887,7 +888,7 @@ export function createEnvironment({ scene, renderer, camera }) {
   }
 
   function updateRain(dt, cameraPos) {
-    const active = state.rain;
+    const active = state.rain * (state.interior ? 0 : 1);
     rainMat.opacity = active * (state.weatherLabel === 'storm' ? 0.55 : 0.4);
     rain.visible = active > 0.01;
     if (!rain.visible) return;
@@ -916,7 +917,7 @@ export function createEnvironment({ scene, renderer, camera }) {
   }
 
   function updateMist(dt) {
-    const intensity = state.mist;
+    const intensity = state.mist * (state.interior ? 0 : 1);
     for (const m of mists) {
       m.sprite.visible = intensity > 0.015;
       m.mat.opacity = 0.09 * intensity;
@@ -929,7 +930,7 @@ export function createEnvironment({ scene, renderer, camera }) {
   }
 
   function updateDust(dt) {
-    const intensity = state.dust * state.daylight * (1 - state.overcast) * 0.4;
+    const intensity = state.dust * state.daylight * (1 - state.overcast) * 0.4 * (state.interior ? 0 : 1);
     dust.visible = intensity > 0.02;
     dustMat.opacity = intensity * 0.42;
     if (!dust.visible) return;
@@ -979,6 +980,7 @@ export function createEnvironment({ scene, renderer, camera }) {
   function update(dt, env) {
     dt = Math.min(dt || 0.016, 0.1);
     elapsed += dt;
+    state.interior = Boolean(env?.interior);
     targetCached = computeTarget(env || {});
     applyColors(dt);
     updateLightning(dt);
